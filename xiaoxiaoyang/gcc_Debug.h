@@ -263,9 +263,6 @@
 #ifndef __GCC_ATOMIC_CHAR16_T_LOCK_FREE
 #define __GCC_ATOMIC_CHAR16_T_LOCK_FREE 2
 #endif
-#ifndef STM32F103C8
-#define STM32F103C8 1
-#endif
 #ifndef __USACCUM_IBIT__
 #define __USACCUM_IBIT__ 8
 #endif
@@ -349,6 +346,9 @@
 #endif
 #ifndef __ULLACCUM_MAX__
 #define __ULLACCUM_MAX__ 0XFFFFFFFFFFFFFFFFP-32ULLK
+#endif
+#ifndef STM32F103ZE
+#define STM32F103ZE 1
 #endif
 #ifndef __cpp_delegating_constructors
 #define __cpp_delegating_constructors 200604
@@ -508,8 +508,8 @@
 #ifndef __GXX_ABI_VERSION
 #define __GXX_ABI_VERSION 1010
 #endif
-#ifndef STM32F103xB
-#define STM32F103xB 1
+#ifndef STM32F103xE
+#define STM32F103xE 1
 #endif
 #ifndef __UTA_FBIT__
 #define __UTA_FBIT__ 64

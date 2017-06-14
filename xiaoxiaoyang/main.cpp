@@ -8,15 +8,17 @@
 #include "CALLBACK.h"
 #include "reset.h"
 #include "GTA0.h"
+#include "KEY.h"
+#include "DAC.h"
 
 int i,j;
 uint8_t val1[10];
 uint8_t val2[10];
-uint8_t val;
+float val;
+float current[2] = { 0,0 };
 uint8_t SPI;
 int8_t speed[2] = { 1,0 };
 int8_t accel[4] = { 10,10,10,10 };
-uint8_t KEY;
 int8_t angle[13];
 uint8_t MPU6050[13] = { ACCEL_CONFIG,ACCEL_XOUT_H,ACCEL_XOUT_L,ACCEL_YOUT_H,ACCEL_YOUT_L,ACCEL_ZOUT_H,ACCEL_ZOUT_L,GYRO_XOUT_H,GYRO_XOUT_L,GYRO_YOUT_H,GYRO_YOUT_L,GYRO_ZOUT_H	,GYRO_ZOUT_L };
 extern int receive1[10];
@@ -46,10 +48,136 @@ int main(void)
 {
 		SystemCoreClockUpdate();
 		HAL_Init();
+		LED_GDB_INIT();//PC
+		//PWM_init();
+		key_init();//PB
+		DAC_init();
+		HAL_DAC_SetValue(&hdac, DACx_CHANNEL, DAC_ALIGN_12B_R, current[0]);
+		KEY_GPIO_Init();
+
+		HAL_DAC_Start(&hdac, DACx_CHANNEL);
+		//while (1)
+		//{
+		//	if (HAL_GPIO_ReadPin(GPIOA, KEY1) == 1)//(GPIOA->IDR=0X0000DEEF)     控制加减
+		//	{
+		//		HAL_Delay(10);
+		//		if (HAL_GPIO_ReadPin(GPIOA, KEY1) == 1)//(GPIOA->IDR == 0X0000DEEF)
+		//		{
+
+		//			val = !val;
+
+		//		}
+		//		while (!HAL_GPIO_ReadPin(GPIOA, KEY1));
+
+
+		//	}
+		//}
+
+		val = 100;
+		i = 0;
+		current[1] = (val - 100) / 100;
+		while (1)
+		{
+
+			HAL_DAC_SetValue(&hdac, DACx_CHANNEL, DAC_ALIGN_12B_R, current[0]);
+			if (HAL_GPIO_ReadPin(GPIOA, KEY1) == 0)//(GPIOA->IDR=0X0000DEEF)     控制加减
+			{
+				HAL_Delay(10);
+				if (HAL_GPIO_ReadPin(GPIOA, KEY1) == 0)//(GPIOA->IDR == 0X0000DEEF)
+				{
+
+					HAL_Delay(500);
+					if (HAL_GPIO_ReadPin(GPIOA, KEY1) == 1)
+					{
+						if (i == 0)
+						{
+							val++;
+							if (val > 200)
+							{
+								val = 200;
+							}
+						}
+						else if (i == 1)
+						{
+							val--;
+							if (val < 200)
+							{
+								val = 0;
+							}
+						}
+						current[1] = (val - 100) / 100;
+
+
+					}
+					else
+					{
+						while (HAL_GPIO_ReadPin(GPIOA, KEY1))
+						{
+							if (i == 0)
+							{
+								val++;
+								if (val > 200)
+								{
+									val = 200;
+								}
+							}
+							else if (i == 1)
+							{
+								val--;
+								if (val < 200)
+								{
+									val = 0;
+								}
+							}
+
+							current[1] = (val - 100) / 100;
+							HAL_Delay(100);
+
+						}
+
+					}
+
+				}
+				while (!HAL_GPIO_ReadPin(GPIOA, KEY1));
+
+
+			}
+		
+
+
+			if (HAL_GPIO_ReadPin(GPIOA, KEY2) == 0)//切换与确定
+			{
+				HAL_Delay(10);
+				if (HAL_GPIO_ReadPin(GPIOA, KEY2) == 0)
+				{
+
+					HAL_Delay(500);
+					if (HAL_GPIO_ReadPin(GPIOA, KEY2) == 1)
+					{
+
+						i = !i;
+
+					}
+					else
+					{
+						current[0] = current[1];
+
+					}
+
+				}
+				while (!HAL_GPIO_ReadPin(GPIOA, KEY2));
+
+
+			}
+		}
 	
       		//LED模块
 		/*LED_GDB_INIT();
 		for (;;)
+
+
+
+
 		{
 			HAL_GPIO_WritePin(GPIOC, LED, GPIO_PIN_SET);
 			HAL_Delay(i);
@@ -150,14 +278,16 @@ int main(void)
 	   //I2C1_WriteData(uint8_t Addr, uint8_t Reg, uint8_t Val1[9]); //写入函数示例
        
         //SPI通信
-   spi1_init();
-    while (1)
+  /* spi1_init();
+	while (1)
 	{
 		SPI = SPI1_WriteRead(speed[0]);
 
-	}
+	}*/
 	   
-
+        
+    //待机模式
+     
 	
 		//电机驱动
 	
